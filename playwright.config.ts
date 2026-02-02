@@ -1,15 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
+const envFile = path.resolve(__dirname, `.env.${process.env.ENVIRONMENT || 'development'}`);
+const defaultFile = path.resolve(__dirname, '.env');
 
-// Charger le bon fichier .env selon ENVIRONMENT
 dotenv.config({
-  path: path.resolve(__dirname, `.env.${process.env.ENVIRONMENT || 'development'}`),
+  path: fs.existsSync(envFile) ? envFile : defaultFile,
 });
 
+
 export default defineConfig({
-  testDir:"./e2e/tests", // tes fichiers auth.spec.ts, admin.spec.ts, etc.
+  testDir: "./e2e/tests",
   timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -18,10 +21,8 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    // Base URL injectée depuis ton .env
-    baseURL: process.env.BASE_URL || 'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
-    
-    headless: false, // voir le navigateur en action
+    baseURL: process.env.BASE_URL ,
+    headless: false,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -32,13 +33,5 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
   ],
 });

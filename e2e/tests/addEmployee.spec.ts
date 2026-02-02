@@ -1,38 +1,45 @@
 import { test, expect } from "@playwright/test";
 import { Env } from "../frameworkConfig/env";
 import LoginPage from "../pages/loginPage";
-import AddEmployeePage from "../pages/addEmployeePage";
+import HomePage from "../pages/homePage"; // expose LeftMenuComponent et TopMenuComponent
 import { getRandomEmployeeDetails } from "../testdata/random";
 
-test("Ajout d’un employé avec Employee Id du formulaire", async ({ page }) => {
-  await page.goto(Env.BASE_URL);
-
+test("Ajout d’un employé OrangeHRM", async ({ page }) => {
+  // Connexion via LoginPage
   const loginPage = new LoginPage(page);
+  await loginPage.visit();
   const homePage = await loginPage.login(Env.USERNAME, Env.PASSWORD);
 
+  // Navigation : LeftMenu → PIM, puis TopMenu → Add Employee
   await homePage.getLeftMenuComponent().selectLeftMenuItem("PIM");
   await homePage.getTopMenuComponent().selectTopMenuItem("Add Employee");
+//  // Remplissage des champs
+//   await page.getByRole('textbox', { name: 'First Name' }).fill('Diallo');
+//   await page.getByRole('textbox', { name: 'Middle Name' }).fill('Mariam');
+//   await page.getByRole('textbox', { name: 'Last Name' }).fill('Ani');
 
-  const addEmployeePage = new AddEmployeePage(page);
+// --- Remplissage des champs avec getRandomEmployeeDetails --- 
+const employeeDetails = getRandomEmployeeDetails(); 
+await page.getByRole("textbox", { name: "First Name" }).fill(employeeDetails.firstName); 
+await page.getByRole("textbox", { name: "Middle Name" }).fill(employeeDetails.middleName); 
+await page.getByRole("textbox", { name: "Last Name" }).fill(employeeDetails.lastName);
 
-  // Génération aléatoire des noms
-  const employeeDetails = getRandomEmployeeDetails();
-
-  // Récupération de l’Employee Id déjà présent dans le formulaire
-  const idTextBox = page.getByRole("textbox").nth(4);
+  // Vérification du champ Employee Id
+  const idTextBox = page.getByRole('textbox').nth(4);
   const currentValue = await idTextBox.inputValue();
 
-  if (currentValue && currentValue.trim() !== "") {
-    employeeDetails.employeeId = currentValue; // on garde celui du formulaire
-    console.log(`Employee Id récupéré du formulaire: ${currentValue}`);
+  if (currentValue && currentValue.trim() !== '') {
+    // Champ déjà prérempli → on garde la valeur
+    console.log(`Employee Id déjà présent: ${currentValue}`);
   } else {
-    employeeDetails.employeeId = "0405"; // fallback manuel
-    console.log("Employee Id ajouté manuellement: 0405");
+    // Champ vide → on remplit manuellement
+    await idTextBox.fill('0400');
+    console.log('Employee Id ajouté manuellement: 0400');
   }
 
-  // Ajout de l’employé
-  await addEmployeePage.addEmployee(employeeDetails);
+  // Sauvegarde
+  await page.getByRole('button', { name: 'Save' }).click();
 
   // Vérification du succès
-  await expect(addEmployeePage.successMessage).toBeVisible();
+  await expect(page.getByText(/Successfully Saved/i)).toBeVisible();
 });
