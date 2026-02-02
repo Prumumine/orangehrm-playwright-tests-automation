@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
-import dotenv from 'dotenv';
-import path from 'path';
-
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 // Charger le bon fichier .env selon ENVIRONMENT
 dotenv.config({
