@@ -1,44 +1,45 @@
-import { Page, expect } from "@playwright/test";
+import { Page } from "@playwright/test";
+import LeftMenuComponent from "./components/leftMenuComponent";
+import TopMenuComponent from "./components/topMenuComponent";
 
-export default class NavigationPage {
-  constructor(private readonly page: Page) {}
+class NavigationPage {
+  private readonly leftMenu: LeftMenuComponent;
+  private readonly topMenu: TopMenuComponent;
 
-async goToPIM() {
-  const pimLink = this.page.locator('a[href="/web/index.php/pim/viewEmployeeList"]');
-  await pimLink.waitFor({ state: "visible" });
-  await pimLink.click();
-  await expect(this.page).toHaveURL(/pim\/viewEmployeeList/);
-  // Vérifier qu'on est bien sur la page PIM
-  await expect(this.page.locator("h6")).toHaveText("PIM");
-}
-
-async goToTime() {
-  const timeLink = this.page.locator('a[href="/web/index.php/time/viewEmployeeTimesheet"]');
-  await timeLink.waitFor({ state: "visible" });
-  await timeLink.click();
-  await expect(this.page).toHaveURL(/time\/viewEmployeeTimesheet/);
-  await expect(this.page.locator("h6")).toHaveText("Time/Timesheets");
-}
-
-async goToRecruitment() {
-  const recruitmentLink = this.page.locator('a[href="/web/index.php/recruitment/viewCandidates"]');
-  await recruitmentLink.waitFor({ state: "visible" });
-  await recruitmentLink.click();
-  await expect(this.page).toHaveURL(/recruitment\/viewCandidates/);
-  await expect(this.page.locator("h6")).toHaveText("Recruitment");
-}
-
-  async openUserMenu() {
-    await this.page.locator(".oxd-userdropdown-name").click();
+  constructor(private readonly page: Page) {
+    this.leftMenu = new LeftMenuComponent(page);
+    this.topMenu = new TopMenuComponent(page);
   }
 
-  async assertLogoutVisible() {
-    await expect(this.page.getByRole("menuitem", { name: "Logout" })).toBeVisible();
+  // --- Méthodes Left Menu ---
+  async goToPIM() {
+    await this.leftMenu.selectLeftMenuItem("PIM");
   }
 
-  async assertDashboardButtonAccessible() {
-    const dashboardButton = this.page.getByRole("link", { name: "Dashboard" });
-    await expect(dashboardButton).toBeVisible();
-    await expect(dashboardButton).toBeEnabled();
+  async goToTime() {
+    await this.leftMenu.selectLeftMenuItem("Time");
+  }
+
+  async goToRecruitment() {
+    await this.leftMenu.selectLeftMenuItem("Recruitment");
+  }
+
+  async goToLeave() {
+    await this.leftMenu.selectLeftMenuItem("Leave");
+  }
+
+  async goToDashboard() {
+    await this.leftMenu.selectLeftMenuItem("Dashboard");
+  }
+
+  // --- Méthodes Top Menu ---
+  async selectTopMenuItem(menuItem: string) {
+    await this.topMenu.selectTopMenuItem(menuItem);
+  }
+
+  async logout() {
+    await this.topMenu.logout();
   }
 }
+
+export default NavigationPage;

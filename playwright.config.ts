@@ -10,7 +10,7 @@ dotenv.config({
 
 export default defineConfig({
   testDir:"./e2e/tests", // tes fichiers auth.spec.ts, admin.spec.ts, etc.
-  timeout: 240_000,
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
